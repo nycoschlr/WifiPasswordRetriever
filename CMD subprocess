@@ -1,0 +1,29 @@
+#Playing with CMD
+import subprocess
+
+data = subprocess.check_output(["netsh", "wlan","show","profiles"]).decode("cp1252").split('\n')
+profiles = [i.split(":")[1][1:-1] for i in data if "Profil Tous les utilisateurs" in i]
+passwords = []
+
+for i in profiles:
+    try:
+        results = subprocess.check_output(["netsh","wlan","show", "profile",i,"key=clear"]).decode(
+            "cp1252").split('\n')
+        results = [b.split(":")[1][1:-1] for b in results if "Contenu de la cl" in b]
+        passwords.append(results)
+
+    except subprocess.CalledProcessError:
+        print("{:<30}|  {:<}".format(i, "ENCODING ERROR"))
+
+
+final_list = list(zip(profiles,passwords))
+
+#Saving the files on USB stick
+import os.path
+save_path = "E:"
+
+test = os.path.join(save_path,"Password list.txt")
+
+file1 = open(test,"w")
+file1.write(str(final_list))
+file1.close()
